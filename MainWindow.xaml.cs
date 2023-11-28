@@ -35,7 +35,7 @@ namespace SnakeGame
             { Direction.Left, 270 }
         };
 
-        private readonly int rows = 15, cols = 15;
+        private readonly int rows = 25, cols = 25; // Rows and cols must be equal
         private readonly Image[,] gridImages;
         private GameState gameState;
         private bool gameRunning;
@@ -111,6 +111,7 @@ namespace SnakeGame
             Image[,] images = new Image[rows, cols];
             GameGrid.Rows = rows;
             GameGrid.Columns = cols;
+            GameGrid.Width = GameGrid.Height * (cols / (double)rows);
 
             for (int r = 0; r < rows; r++)
             {
@@ -159,6 +160,19 @@ namespace SnakeGame
             image.RenderTransform = new RotateTransform(rotation);
         }
 
+        private async Task DrawDeadSnake()
+        {
+            List<Position> positions = new List<Position>(gameState.SnakePosition());
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                Position pos = positions[i];
+                ImageSource source = (i == 0) ? Images.DeadHead : Images.Deadbody;
+                gridImages[pos.Row, pos.Col].Source = source;
+                await Task.Delay(50);
+            }
+        }
+
         private async Task ShowCountDown()
         {
             for (int i = 3; i >= 1; i--)
@@ -170,6 +184,7 @@ namespace SnakeGame
 
         private async Task ShowGameOver()
         {
+            await DrawDeadSnake();
             await Task.Delay(1000);
             Overlay.Visibility = Visibility.Visible;
             OverlayText.Text = "PRESS ANY KEY TO START";
